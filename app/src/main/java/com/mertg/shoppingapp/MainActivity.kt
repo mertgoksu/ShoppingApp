@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.mertg.shoppingapp.navigation.MainScaffold
 import com.mertg.shoppingapp.navigation.NavGraph
 import com.mertg.shoppingapp.ui.theme.ShoppingAppTheme
 import com.mertg.shoppingapp.viewmodel.AuthViewModel
@@ -37,12 +38,14 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
             val productViewModel = ViewModelProvider(this).get(ProductViewModel::class.java)
-            Surface(color = MaterialTheme.colorScheme.background) {
-                NavGraph(
-                    navController = navController,
-                    authViewModel = authViewModel,
-                    productViewModel = productViewModel
-                )
+            ShoppingAppTheme {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    MainScaffold(
+                        navController = navController,
+                        authViewModel = authViewModel,
+                        productViewModel = productViewModel
+                    )
+                }
             }
         }
     }

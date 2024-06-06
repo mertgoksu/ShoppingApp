@@ -5,10 +5,12 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mertg.shoppingapp.navigation.Screen
 
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     fun signInWithEmailAndPassword(
         email: String,
@@ -38,5 +40,16 @@ class AuthViewModel : ViewModel() {
                     Toast.makeText(context, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun checkAndCreateCart() {
+        val userId = auth.currentUser?.uid ?: return
+        val cartRef = db.collection("carts").document(userId)
+
+        cartRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                cartRef.set(hashMapOf<String, Any>())
+            }
+        }
     }
 }

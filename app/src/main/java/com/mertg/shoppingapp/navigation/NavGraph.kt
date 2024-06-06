@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
-import com.mertg.shoppingapp.util.UploadItem
 import com.mertg.shoppingapp.view.*
 import com.mertg.shoppingapp.viewmodel.*
 
@@ -30,7 +29,7 @@ fun NavGraph(
             UploadItem(navController = navController, viewModel = productViewModel)
         }
         composable(Screen.HomePage.route) {
-            MainScaffold(navController = navController)
+            MainScaffold(navController = navController,authViewModel,productViewModel)
         }
         composable(Screen.CartPage.route) {
             CartScreen(navController = navController, viewModel = cartViewModel)
@@ -43,11 +42,15 @@ fun NavGraph(
         }
         composable(
             route = Screen.DetailPage.route,
-            arguments = listOf(navArgument("item_id") {
+            arguments = listOf(navArgument("itemId") {
                 type = NavType.StringType
             })
         ) { backStackEntry ->
-            DetailScreen(navController = navController, productId = backStackEntry.arguments?.getString("item_id") ?: "", viewModel = productViewModel)
+            DetailScreen(
+                navController = navController,
+                productId = backStackEntry.arguments?.getString("itemId") ?: "",
+                viewModel = productViewModel
+            )
         }
     }
 }

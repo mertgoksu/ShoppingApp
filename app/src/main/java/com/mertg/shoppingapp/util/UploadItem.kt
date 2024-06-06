@@ -1,7 +1,6 @@
-package com.mertg.shoppingapp.util
+package com.mertg.shoppingapp.view
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -10,21 +9,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
 @Composable
-fun UploadItem(navController: NavController, viewModel: ProductViewModel) {
+fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewModel()) {
     val context = LocalContext.current
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
+
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         imageUri = uri
     }
 
@@ -35,37 +35,13 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = { imagePickerLauncher.launch("image/*") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Select Image")
-        }
-
-        // Seçilen görselin öngösterimi
         imageUri?.let {
             Spacer(modifier = Modifier.height(16.dp))
             Image(
-                painter = rememberImagePainter(data = it),
+                painter = rememberAsyncImagePainter(it),
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
@@ -74,21 +50,37 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = { imagePicker.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
-                if (imageUri != null) {
-                    viewModel.uploadProduct(
-                        name,
-                        description,
-                        imageUri.toString(),
-                        context,
-                        navController
-                    )
-                } else {
-                    Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
+                imageUri?.let { uri ->
+                    viewModel.uploadProduct(name, description, uri, context, navController)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            enabled = name.isNotEmpty() && description.isNotEmpty() && imageUri != null
         ) {
             Text("Upload Item")
         }

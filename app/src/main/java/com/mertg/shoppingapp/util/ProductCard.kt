@@ -1,5 +1,6 @@
-package com.mertg.shoppingapp.view
+package com.mertg.shoppingapp.util
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.mertg.shoppingapp.model.Product
 
 @Composable
@@ -35,6 +38,15 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = product.imageUrl),
+                contentDescription = product.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(text = product.name, style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = product.description, style = MaterialTheme.typography.bodyLarge)

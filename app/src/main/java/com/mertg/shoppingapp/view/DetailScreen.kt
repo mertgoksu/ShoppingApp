@@ -7,16 +7,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.mertg.shoppingapp.model.Product
+import com.mertg.shoppingapp.viewmodel.CartViewModel
 import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
 @Composable
 fun DetailScreen(navController: NavController, productId: String, viewModel: ProductViewModel = viewModel()) {
     var product by remember { mutableStateOf<Product?>(null) }
+
+    var cartViewModel = CartViewModel()
+    var productViewModel = ProductViewModel()
+
+    val context = LocalContext.current
 
     LaunchedEffect(productId) {
         viewModel.getProductById(productId,
@@ -49,7 +56,7 @@ fun DetailScreen(navController: NavController, productId: String, viewModel: Pro
                 Spacer(modifier = Modifier.height(16.dp))
                 Row {
                     Button(
-                        onClick = { /* Add to cart logic */ },
+                        onClick = { productViewModel.addToCart(product!!.id, product!!.name,context) },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Add to Cart")

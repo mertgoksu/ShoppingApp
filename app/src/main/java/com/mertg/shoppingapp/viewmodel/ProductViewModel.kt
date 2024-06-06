@@ -1,11 +1,14 @@
 package com.mertg.shoppingapp.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.mertg.shoppingapp.model.Product
 import com.mertg.shoppingapp.navigation.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +22,10 @@ class ProductViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+
     init {
         getProducts()
     }
@@ -26,10 +33,9 @@ class ProductViewModel : ViewModel() {
     fun getProducts() {
         viewModelScope.launch {
             _isLoading.value = true
-            val db = FirebaseFirestore.getInstance()
             db.collection("products").get()
                 .addOnSuccessListener { documents ->
-                    val products = documents.mapNotNull { it.toObject(Product::class.java) }
+                    val products = documents.mapNotNull { it.toObject(Product::class.java).copy(id = it.id) }
                     _productList.value = products
                     _isLoading.value = false
                 }
@@ -38,49 +44,76 @@ class ProductViewModel : ViewModel() {
                 }
         }
     }
+
     fun uploadProduct(
         name: String,
         description: String,
-        imageUri: String,
+        imageUri: Uri,
         context: Context,
         navController: NavController
     ) {
-        val db = FirebaseFirestore.getInstance()
-        val productId = db.collection("products").document().id // Benzersiz kimlik oluşturuluyor
-        val product = hashMapOf(
-            "id" to productId, // id alanı ekleniyor
-            "name" to name,
-            "description" to description,
-            "imageUrl" to imageUri // URI string olarak kaydediliyor
-        )
+        val userId = auth.currentUser?.uid ?: return
+        val storageRef = storage.reference.child("$userId/product_images/${System.currentTimeMillis()}.jpg")
 
-        db.collection("products")
-            .document(productId) // Document ID olarak oluşturulan kimlik kullanılıyor
-            .set(product)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Product uploaded successfully", Toast.LENGTH_SHORT).show()
-                navController.navigate(Screen.HomePage.route) {
-                    popUpTo(Screen.UploadItem.route) { inclusive = true }
-                }
+        val uploadTask = storageRef.putFile(imageUri)
+        uploadTask.addOnFailureListener {
+            Toast.makeText(context, "Error uploading image: ${it.message}", Toast.LENGTH_SHORT).show()
+        }.addOnSuccessListener { taskSnapshot ->
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                val productRef = db.collection("products").document()
+                val product = hashMapOf(
+                    "id" to productRef.id,
+                    "name" to name,
+                    "description" to description,
+                    "imageUrl" to uri.toString()
+                )
+
+                productRef.set(product)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Product uploaded successfully", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Screen.HomePage.route) {
+                            popUpTo(Screen.UploadItem.route) { inclusive = true }
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Error uploading product: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Error uploading product: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        }
     }
 
-
     fun getProductById(productId: String, onSuccess: (Product) -> Unit, onFailure: (Exception) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("products").whereEqualTo("id", productId).get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val product = documents.documents[0].toObject(Product::class.java)
-                    product?.let { onSuccess(it) } ?: onFailure(Exception("Product not found"))
-                } else {
-                    onFailure(Exception("Product not found"))
-                }
+        db.collection("products").document(productId).get()
+            .addOnSuccessListener { document ->
+                val product = document.toObject(Product::class.java)?.copy(id = document.id)
+                product?.let { onSuccess(it) } ?: onFailure(Exception("Product not found"))
             }
             .addOnFailureListener { onFailure(it) }
+    }
+
+    fun addToCart(productId: String, productName: String, context: Context) {
+        val userId = auth.currentUser?.uid ?: return
+        val cartRef = db.collection("carts").document(userId)
+
+        cartRef.get().addOnSuccessListener { document ->
+            val currentCount = document.getLong(productId) ?: 0
+            val newCount = currentCount + 1
+            cartRef.update(productId, newCount).addOnSuccessListener {
+                Toast.makeText(context, "Product added to cart", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                cartRef.set(mapOf(productId to newCount)).addOnSuccessListener {
+                    Toast.makeText(context, "Product added to cart", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener {
+                    Toast.makeText(context, "Failed to add product to cart", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.addOnFailureListener {
+            cartRef.set(mapOf(productId to 1)).addOnSuccessListener {
+                Toast.makeText(context, "Product added to cart", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                Toast.makeText(context, "Failed to add product to cart", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 }

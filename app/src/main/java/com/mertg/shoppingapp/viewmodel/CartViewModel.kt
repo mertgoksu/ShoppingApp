@@ -8,32 +8,43 @@ import com.mertg.shoppingapp.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class CartViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
-
-    private val _cartItems = MutableStateFlow<List<Product>>(emptyList())
-    val cartItems: StateFlow<List<Product>> = _cartItems
+    private val _cartItems = MutableStateFlow<List<Pair<Product, Int>>>(emptyList())
+    val cartItems: StateFlow<List<Pair<Product, Int>>> = _cartItems
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
     fun getCartItems() {
-        val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
-            db.collection("carts").document(userId).collection("items")
-                .get()
-                .addOnSuccessListener { result ->
-                    val items = result.map { document ->
-                        document.toObject(Product::class.java).copy(id = document.id)
+            _isLoading.value = true
+            val userId = auth.currentUser?.uid ?: return@launch
+            val cartRef = db.collection("carts").document(userId)
+
+            try {
+                val document = cartRef.get().await()
+                val productEntries = document.data?.entries ?: emptySet()
+                val products = mutableListOf<Pair<Product, Int>>()
+
+                for ((productId, quantity) in productEntries) {
+                    val productDoc = db.collection("products").document(productId).get().await()
+                    val product = productDoc.toObject(Product::class.java)?.copy(id = productId)
+                    if (product != null && quantity is Long) {
+                        products.add(Pair(product, quantity.toInt()))
                     }
-                    _cartItems.value = items
-                    _isLoading.value = false
                 }
-                .addOnFailureListener {
-                    _isLoading.value = false
-                }
+
+                _cartItems.value = products
+            } catch (e: Exception) {
+                _cartItems.value = emptyList()
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
