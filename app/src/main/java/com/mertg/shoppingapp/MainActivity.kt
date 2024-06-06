@@ -6,16 +6,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.mertg.shoppingapp.navigation.NavGraph
 import com.mertg.shoppingapp.ui.theme.ShoppingAppTheme
 import com.mertg.shoppingapp.viewmodel.AuthViewModel
+import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +35,15 @@ class MainActivity : ComponentActivity() {
                 }
             }*/
             val navController = rememberNavController()
-            val viewModel: AuthViewModel = viewModel()
-            NavGraph(navController = navController, viewModel = viewModel)
+            val authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+            val productViewModel = ViewModelProvider(this).get(ProductViewModel::class.java)
+            Surface(color = MaterialTheme.colorScheme.background) {
+                NavGraph(
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    productViewModel = productViewModel
+                )
+            }
         }
     }
 }
