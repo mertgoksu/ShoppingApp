@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1046629982802",
+    "project_id": "shoppingapp-ba222",
+    "storage_bucket": "shoppingapp-ba222.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1046629982802:android:a7473dba49f05d84b8758b",
+        "android_client_info": {
+          "package_name": "com.mertg.shoppingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVxPgxDEIbk7C274KLwSUO6BFYohK3A1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
