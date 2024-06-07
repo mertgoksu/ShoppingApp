@@ -1,10 +1,9 @@
 package com.mertg.shoppingapp.view
 
-import ProductViewModel
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,50 +15,49 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
-import coil.request.ImageRequest
 import com.mertg.shoppingapp.R
 import com.mertg.shoppingapp.model.Product
 import com.mertg.shoppingapp.navigation.Screen
 import com.mertg.shoppingapp.ui.theme.Orange
+import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: ProductViewModel = viewModel()) {
     val productList by viewModel.productList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     var searchText by remember { mutableStateOf("") }
 
-    val filteredProducts = productList.filter {
-        searchText.isEmpty() || it.name.contains(searchText, ignoreCase = true)
-    }
+    val categories = listOf("Moda", "Elektronik", "Mutfak", "Kitap", "Spor")
+
+    val filteredProducts = productList.filter { it.name.contains(searchText, ignoreCase = true) }
 
     Scaffold(
         topBar = {
-            SearchBar(
-                text = searchText,
-                onValueChange = { searchText = it },
-                onSearch = {
-                    // This is where the search logic is applied, currently it filters as you type.
-                }
+            TopAppBar(
+                title = { Text("ShoppingApp", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Orange
+                )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            Text("Sana Özel Ürünler", style = MaterialTheme.typography.titleMedium,modifier = Modifier.padding(16.dp))
-            CategoriesRow()
-            if (isLoading) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator()
-                }
-            } else {
+        LazyColumn(modifier = Modifier.padding(innerPadding)) {
+            item {
+                SearchBar(
+                    query = searchText,
+                    onQueryChange = { searchText = it },
+                    onSearch = { /* Do nothing */ }
+                )
+
+                Text("Sana Özel Ürünler", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
                 LazyRow(modifier = Modifier.padding(8.dp)) {
                     items(filteredProducts) { product ->
                         ProductCard(product, onClick = {
@@ -67,60 +65,65 @@ fun HomeScreen(navController: NavController, viewModel: ProductViewModel = viewM
                         })
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Image(painter = painterResource(id = R.drawable.sale), contentDescription = "Sale",
+                Image(
+                    painter = painterResource(id = R.drawable.sale),
+                    contentDescription = "Sale",
                     modifier = Modifier
-                        .height(300.dp)
+                        .height(200.dp)
                         .fillMaxWidth(),
-                    contentScale = ContentScale.Crop)
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // Kategorilere göre ürünleri göster
+            categories.forEach { category ->
+                val categoryProducts = productList.filter { it.category == category }
+                item {
+                    CategorySection(category = category, products = categoryProducts, navController = navController)
+                }
             }
         }
     }
 }
 
 @Composable
-fun CategoriesRow() {
-    val categories = listOf("Giyim", "Elektronik", "Mutfak", "Kitap", "Spor")
-    LazyRow(modifier = Modifier.fillMaxWidth()
-        .padding(start = 18.dp)) {
-        items(categories) { category ->
-            CategoryChip(category = category)
+fun CategorySection(category: String, products: List<Product>, navController: NavController) {
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(
+            text = category,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(8.dp)
+        )
+        LazyRow {
+            items(products) { product ->
+                ProductCard(product, onClick = {
+                    navController.navigate(Screen.DetailPage.passItemId(product.id))
+                })
+            }
         }
     }
 }
 
 @Composable
-fun CategoryChip(category: String) {
-    Button(
-        onClick = { /* Kategoriye tıklandığında yapılacak işlem */ },
-        colors = ButtonDefaults.buttonColors(containerColor = Orange),
-        modifier = Modifier.padding(horizontal = 4.dp),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Text(category)
-    }
-}
-
-
-@Composable
 fun SearchBar(
-    text: String,
-    onValueChange: (String) -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
     onSearch: () -> Unit
 ) {
     OutlinedTextField(
-        value = text,
-        onValueChange = onValueChange,
+        value = query,
+        onValueChange = onQueryChange,
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp),
-        placeholder = { Text("Search") },
+        placeholder = { Text("Ara") },
         singleLine = true,
         trailingIcon = {
             IconButton(onClick = onSearch) {
-                Icon(painter = painterResource(id = R.drawable.search), contentDescription = "Search")
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
             }
         }
     )
@@ -132,13 +135,15 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
         modifier = Modifier
             .padding(8.dp)
             .clickable(onClick = onClick)
-            .width(180.dp)  // Adjusted width
-            .height(250.dp),  // Adjusted height
+            .width(180.dp)
+            .height(250.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            val imagePainter = rememberImagePainter(data = product.imageUrl)
+            val imagePainter = rememberAsyncImagePainter(
+                model = product.imageUrl
+            )
             Image(
                 painter = imagePainter,
                 contentDescription = "Product Image",
@@ -150,19 +155,22 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Column(
-
-            ) {
-                Text(text = product.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Column {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "${product.price} ₺", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.align(Alignment.CenterHorizontally))
+                Text(
+                    text = "${"%.2f".format(product.price)} ₺",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
             Spacer(modifier = Modifier.height(10.dp))
-            
-
         }
     }
 }
-
-
-

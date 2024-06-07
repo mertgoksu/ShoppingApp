@@ -28,28 +28,38 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    fun register(email: String, password: String, context: Context, navController: NavController) {
+    fun register(
+        name: String,
+        email: String,
+        password: String,
+        phone: String,
+        address: String,
+        context: Context,
+        navController: NavController
+    ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-                    navController.navigate(Screen.UploadItem.route) {
-                        popUpTo(Screen.RegisterPage.route) { inclusive = true }
-                    }
+                    val userId = task.result?.user?.uid ?: return@addOnCompleteListener
+                    val user = hashMapOf(
+                        "name" to name,
+                        "email" to email,
+                        "phone" to phone,
+                        "address" to address
+                    )
+                    db.collection("users").document(userId).set(user)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
+                            navController.navigate(Screen.HomePage.route) {
+                                popUpTo(Screen.RegisterPage.route) { inclusive = true }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Registration Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
                 } else {
                     Toast.makeText(context, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
-    }
-
-    private fun checkAndCreateCart() {
-        val userId = auth.currentUser?.uid ?: return
-        val cartRef = db.collection("carts").document(userId)
-
-        cartRef.get().addOnSuccessListener { document ->
-            if (!document.exists()) {
-                cartRef.set(hashMapOf<String, Any>())
-            }
-        }
     }
 }

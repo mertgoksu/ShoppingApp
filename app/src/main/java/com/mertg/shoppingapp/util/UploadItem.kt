@@ -1,6 +1,5 @@
 package com.mertg.shoppingapp.view
 
-import ProductViewModel
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,12 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
 @Composable
 fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewModel()) {
     val context = LocalContext.current
     var name by remember { mutableStateOf("") }
-    var selectedCategory = remember { mutableStateOf("") }
+    var category = remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -59,32 +59,32 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
         TextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Name") },
+            label = { Text("İsim") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        CategoryDropdown(selectedCategory)
+        CategoryDropdown(category)
 
         TextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Description") },
+            label = { Text("Açıklama") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
             value = price,
             onValueChange = { price = it },
-            label = { Text("Price") },
+            label = { Text("Fiyat") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = { imagePicker.launch("image/*") }) {
-            Text("Select Image")
+            Text("Resim Seç")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -93,26 +93,25 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
             onClick = {
                 if(price.toDoubleOrNull() != null) {
                     imageUri?.let { uri ->
-                        viewModel.uploadProduct(name, description, selectedCategory.value, price.toDouble(), uri, context, navController)
+                        viewModel.uploadProduct(name, description, category.value, price.toDouble(), uri, context, navController)
                     }
                 } else {
-                    Toast.makeText(context, "Please enter a valid price", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Geçerli bir değer girin", Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = name.isNotEmpty() && description.isNotEmpty() && selectedCategory.value.isNotEmpty() && price.isNotEmpty() && imageUri != null
+            enabled = name.isNotEmpty() && description.isNotEmpty() && category.value.isNotEmpty() && price.isNotEmpty() && imageUri != null
         ) {
-            Text("Upload Item")
+            Text("Ürün Yükle")
         }
     }
 }
 
 
 
-
 @Composable
 fun CategoryDropdown(selectedCategory: MutableState<String>) {
     var expanded by remember { mutableStateOf(false) }
-    val categories = listOf("Giyim", "Elektronik", "Mutfak", "Kitap", "Spor")
+    val categories = listOf("Moda", "Elektronik", "Mutfak", "Kitap", "Spor")
 
     Column(modifier = Modifier.fillMaxWidth()) {
         TextField(
@@ -148,5 +147,3 @@ fun CategoryDropdown(selectedCategory: MutableState<String>) {
         }
     }
 }
-
-

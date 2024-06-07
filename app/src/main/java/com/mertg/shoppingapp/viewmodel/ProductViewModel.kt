@@ -1,3 +1,5 @@
+package com.mertg.shoppingapp.viewmodel
+
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
@@ -112,6 +114,8 @@ class ProductViewModel : ViewModel() {
                     "id" to productRef.id,
                     "name" to name,
                     "description" to description,
+                    "category" to category,
+                    "price" to price,
                     "imageUrl" to uri.toString()
                 )
 
@@ -128,6 +132,7 @@ class ProductViewModel : ViewModel() {
             }
         }
     }
+
 
     fun toggleFavorite(product: Product, isFavorite: Boolean) {
         val userId = auth.currentUser?.uid ?: return

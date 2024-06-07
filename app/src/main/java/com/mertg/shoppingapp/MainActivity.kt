@@ -1,52 +1,34 @@
 package com.mertg.shoppingapp
 
-import ProductViewModel
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.mertg.shoppingapp.navigation.MainScaffold
-import com.mertg.shoppingapp.navigation.NavGraph
+import com.mertg.shoppingapp.navigation.ShoppingAppNavigator
 import com.mertg.shoppingapp.ui.theme.ShoppingAppTheme
-import com.mertg.shoppingapp.viewmodel.AuthViewModel
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            /*ShoppingAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+            window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     )
-                }
-            }*/
-            val navController = rememberNavController()
-            val authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
-            val productViewModel = ViewModelProvider(this).get(ProductViewModel::class.java)
+
             ShoppingAppTheme {
-                Surface(color = MaterialTheme.colorScheme.background) {
-                    MainScaffold(
-                        navController = navController,
-                        authViewModel = authViewModel,
-                        productViewModel = productViewModel
-                    )
-                }
+                ShoppingAppNavigator()
             }
+
         }
     }
 }

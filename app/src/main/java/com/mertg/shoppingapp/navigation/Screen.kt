@@ -12,5 +12,9 @@ sealed class Screen(val route: String) {
         }
     }
     object UploadItem : Screen("upload")
-    object ProfilePage : Screen("profile")
+    object ProfilePageScreen : Screen("profile")
+
+    object EditProfileScreen : Screen("editProfile")
+
+
 }

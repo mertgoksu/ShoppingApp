@@ -1,9 +1,12 @@
+package com.mertg.shoppingapp.view
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
@@ -18,7 +21,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.mertg.shoppingapp.model.Product
+import com.mertg.shoppingapp.ui.theme.Orange
+import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(navController: NavController, productId: String, viewModel: ProductViewModel = viewModel()) {
     var product by remember { mutableStateOf<Product?>(null) }
@@ -35,42 +41,59 @@ fun DetailScreen(navController: NavController, productId: String, viewModel: Pro
         }
     }
 
-    if (product == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Product not found")
-        }
-    } else {
-        product?.let { p ->
-            Column(Modifier.fillMaxSize().padding(16.dp)) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = p.imageUrl),
-                    contentDescription = p.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                Column(modifier = Modifier.padding(top = 16.dp)) {
-                    Text(text = p.name, style = MaterialTheme.typography.headlineSmall)
-                    Text(text = "${p.price} ₺", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Button(
-                            onClick = { viewModel.addToCart(p.id,p.name,context) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Add to Cart")
-                        }
-                        IconButton(onClick = {
-                            isFavorite = !isFavorite
-                            viewModel.toggleFavorite(p, isFavorite)
-                        }) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = "Toggle Favorite",
-                                tint = if (isFavorite) Color.Red else Color.Gray
-                            )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(product?.name ?: "", color = Color.White) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Orange
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    }
+                }
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        if (product == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Product not found")
+            }
+        } else {
+            product?.let { p ->
+                Column(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = p.imageUrl),
+                        contentDescription = p.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Column(modifier = Modifier.padding(top = 16.dp)) {
+                        Text(text = p.name, style = MaterialTheme.typography.headlineSmall)
+                        Text(text = "${p.price} ₺", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Button(
+                                onClick = { viewModel.addToCart(p.id,p.name,context) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Add to Cart")
+                            }
+                            IconButton(onClick = {
+                                isFavorite = !isFavorite
+                                viewModel.toggleFavorite(p, isFavorite)
+                            }) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                    contentDescription = "Toggle Favorite",
+                                    tint = if (isFavorite) Color.Red else Color.Gray
+                                )
+                            }
                         }
                     }
                 }
