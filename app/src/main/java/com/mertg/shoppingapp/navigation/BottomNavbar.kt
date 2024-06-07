@@ -18,11 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.mertg.shoppingapp.navigation.Screen
+import com.mertg.shoppingapp.ui.theme.Orange
 
 @Composable
 fun BottomNavbar(navController: NavController) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.primary,
+        containerColor = Orange,
         tonalElevation = 4.dp,
     ) {
         NavigationBarItem(

@@ -1,61 +1,42 @@
-package com.mertg.shoppingapp.viewmodel
-
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.mertg.shoppingapp.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
 
 class FavoritesViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-
     private val _favoriteItems = MutableStateFlow<List<Product>>(emptyList())
-    val favoriteItems: StateFlow<List<Product>> = _favoriteItems
-
+    val favoriteItems = _favoriteItems.asStateFlow()
     private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    val isLoading = _isLoading.asStateFlow()
+
+    init {
+        getFavoriteItems()
+    }
 
     fun getFavoriteItems() {
-        val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items")
-                .get()
-                .addOnSuccessListener { result ->
-                    val items = result.map { document ->
-                        document.toObject(Product::class.java).copy(id = document.id)
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        _isLoading.value = true
+        if (userId != null) {
+            db.collection("favorites").document(userId)
+                .collection("items")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        _isLoading.value = false
+                        return@addSnapshotListener
                     }
-                    _favoriteItems.value = items
+                    val products = snapshot?.documents?.mapNotNull { it.toObject(Product::class.java) }
+                    _favoriteItems.value = products ?: emptyList()
                     _isLoading.value = false
                 }
-                .addOnFailureListener {
-                    _isLoading.value = false
-                }
+        } else {
+            _favoriteItems.value = emptyList()
+            _isLoading.value = false
         }
     }
 
-    fun addItemToFavorites(product: Product) {
-        val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items").document(product.id)
-                .set(product)
-                .addOnSuccessListener {
-                    getFavoriteItems() // Refresh favorite items
-                }
-        }
-    }
-
-    fun removeItemFromFavorites(productId: String) {
-        val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items").document(productId)
-                .delete()
-                .addOnSuccessListener {
-                    getFavoriteItems() // Refresh favorite items
-                }
-        }
-    }
 }

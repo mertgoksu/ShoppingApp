@@ -1,5 +1,8 @@
 package com.mertg.shoppingapp.navigation
 
+import DetailScreen
+import FavoritesViewModel
+import ProductViewModel
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -49,7 +52,7 @@ fun NavGraph(
             DetailScreen(
                 navController = navController,
                 productId = backStackEntry.arguments?.getString("itemId") ?: "",
-                viewModel = productViewModel
+                viewModel =  productViewModel
             )
         }
     }

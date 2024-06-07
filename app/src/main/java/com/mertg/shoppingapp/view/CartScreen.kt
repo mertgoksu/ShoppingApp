@@ -33,7 +33,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            //CircularProgressIndicator()
+            CircularProgressIndicator()
         }
     } else {
         Column(
@@ -45,9 +45,9 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                 modifier = Modifier.weight(1f)
             ) {
                 items(cartItems) { (product, quantity) ->
-                    ProductCard(product = product, quantity = quantity, onClick = {
+                    ProductCard(product = product, onClick = {
                         navController.navigate(Screen.DetailPage.passItemId(product.id))
-                    })
+                    }, quantity = quantity)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -62,39 +62,29 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
 }
 
 @Composable
-fun ProductCard(product: Product, quantity: Int, onClick: () -> Unit) {
+fun ProductCard(product: Product, onClick: () -> Unit, quantity: Int) {
     Card(
         modifier = Modifier
-            .width(150.dp)
-            .height(200.dp)
             .padding(8.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White
-        ),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(8.dp)
         ) {
             Image(
                 painter = rememberAsyncImagePainter(model = product.imageUrl),
                 contentDescription = product.name,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterHorizontally)
+                    .height(150.dp)
+                    .fillMaxWidth(),
+                contentScale = ContentScale.Crop
             )
-            Text(text = product.name, style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
+            Text(text = product.name, style = MaterialTheme.typography.titleMedium)
+            Text(text = "${product.price} ₺", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Quantity: $quantity", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = product.description, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

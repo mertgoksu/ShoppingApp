@@ -1,5 +1,6 @@
 package com.mertg.shoppingapp
 
+import ProductViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +21,6 @@ import com.mertg.shoppingapp.navigation.MainScaffold
 import com.mertg.shoppingapp.navigation.NavGraph
 import com.mertg.shoppingapp.ui.theme.ShoppingAppTheme
 import com.mertg.shoppingapp.viewmodel.AuthViewModel
-import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

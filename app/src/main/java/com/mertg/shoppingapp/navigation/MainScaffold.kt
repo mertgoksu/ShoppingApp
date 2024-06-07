@@ -1,5 +1,8 @@
 package com.mertg.shoppingapp.navigation
 
+import DetailScreen
+import FavoritesViewModel
+import ProductViewModel
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -11,6 +14,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.mertg.shoppingapp.view.*
 import com.mertg.shoppingapp.viewmodel.*
+
 
 @Composable
 fun MainScaffold(
@@ -59,8 +63,7 @@ fun MainScaffold(
                 DetailScreen(
                     navController = navController,
                     productId = backStackEntry.arguments?.getString("itemId") ?: "",
-                    viewModel = productViewModel
-                )
+                    viewModel = productViewModel)
             }
         }
     }
