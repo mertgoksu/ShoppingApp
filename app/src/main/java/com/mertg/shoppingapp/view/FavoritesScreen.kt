@@ -31,7 +31,7 @@ fun FavoritesScreen(navController: NavController, viewModel: FavoritesViewModel)
     val isLoading by viewModel.isLoading.collectAsState()
 
     // Ekran her gösterildiğinde favori ürünleri güncelle
-    LaunchedEffect(key1 = Unit) {
+    SideEffect() {
         viewModel.getFavoriteItems()
     }
 

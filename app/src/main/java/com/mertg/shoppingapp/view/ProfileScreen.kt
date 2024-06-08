@@ -68,6 +68,7 @@ fun ProfileScreen(navController: NavController) {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
+                Spacer(modifier = Modifier.height(48.dp))
                 Image(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile Picture",
@@ -75,35 +76,50 @@ fun ProfileScreen(navController: NavController) {
                         .size(80.dp)
                         .padding(end = 16.dp)
                 )
-                Text(text = "Hoşgeldiniz, $userName", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Hoşgeldiniz, $userName", style = MaterialTheme.typography.titleLarge)
             }
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text(text = "Email: $userEmail", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Telefon: $userPhone", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Adres: $userAddress", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(text = "Email: $userEmail", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Telefon: $userPhone", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+//                Text(text = "Adres: $userAddress", style = MaterialTheme.typography.bodyMedium)
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = { navController.navigate(Screen.EditProfileScreen.route) }) {
+                Button(onClick = { navController.navigate(Screen.EditProfileScreen.route) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange, // Buton arka plan rengi
+                        contentColor = Color.White // Buton içindeki metnin rengi
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     Text("Bilgileri Değiştir")
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Button(onClick = {
                     FirebaseAuth.getInstance().signOut()
                     navController.navigate(Screen.LoginPage.route) {
                         popUpTo(Screen.ProfilePageScreen.route) { inclusive = true }
                     }
-                }) {
+                },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange, // Buton arka plan rengi
+                        contentColor = Color.White // Buton içindeki metnin rengi
+                    ),
+                    ) {
                     Text("Çıkış Yap")
                 }
             }

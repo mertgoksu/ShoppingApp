@@ -1,6 +1,8 @@
 package com.mertg.shoppingapp.view
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -9,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mertg.shoppingapp.R
 import com.mertg.shoppingapp.navigation.Screen
 import com.mertg.shoppingapp.ui.theme.Orange
 import com.mertg.shoppingapp.viewmodel.AuthViewModel
@@ -44,13 +48,34 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ) { 
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Top,
+            ){
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "logo",
+
+                    )
+
+            }
+            Spacer(modifier = Modifier.height(100.dp))
+
             TextField(
                 value = email,
                 onValueChange = {
                     email = it
                     emailError = it.isEmpty()
                 },
+                colors = TextFieldDefaults.textFieldColors(
+                    cursorColor = Color.Gray,
+                    focusedIndicatorColor = Color.Gray,
+                    unfocusedIndicatorColor = Orange,
+                    focusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = Orange
+                ),
                 label = { Text("E-posta") },
                 modifier = Modifier.fillMaxWidth(),
                 isError = emailError
@@ -73,6 +98,13 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                     password = it
                     passwordError = it.isEmpty()
                 },
+                colors = TextFieldDefaults.textFieldColors(
+                    cursorColor = Color.Gray,
+                    focusedIndicatorColor = Color.Gray,
+                    unfocusedIndicatorColor = Orange,
+                    focusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = Orange
+                ),
                 label = { Text("Şifre") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -114,6 +146,10 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                             )
                         }
                     },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange, // Buton arka plan rengi
+                        contentColor = Color.White // Buton içindeki metnin rengi
+                    ),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Giriş Yap")
@@ -123,6 +159,10 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
                 Button(
                     onClick = { navController.navigate(Screen.RegisterPage.route) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange, // Buton arka plan rengi
+                        contentColor = Color.White // Buton içindeki metnin rengi
+                    ),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Kayıt Ol")

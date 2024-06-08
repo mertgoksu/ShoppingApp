@@ -62,6 +62,9 @@ fun NavGraph(
                 viewModel = productViewModel
             )
         }
+        composable(Screen.PaymentPage.route) {
+            PaymentScreen(navController,cartViewModel)
+        }
 
     }
 }

@@ -13,14 +13,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.mertg.shoppingapp.ui.theme.Orange
 import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewModel()) {
     val context = LocalContext.current
@@ -60,6 +63,13 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
             value = name,
             onValueChange = { name = it },
             label = { Text("İsim") },
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color.Gray,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Orange,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Orange
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -71,6 +81,13 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
             value = description,
             onValueChange = { description = it },
             label = { Text("Açıklama") },
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color.Gray,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Orange,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Orange
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -78,12 +95,25 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
             value = price,
             onValueChange = { price = it },
             label = { Text("Fiyat") },
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color.Gray,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Orange,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Orange
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { imagePicker.launch("image/*") }) {
+        Button(onClick = { imagePicker.launch("image/*") },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Orange, // Buton arka plan rengi
+                contentColor = Color.White // Buton içindeki metnin rengi
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Resim Seç")
         }
 
@@ -99,6 +129,11 @@ fun UploadItem(navController: NavController, viewModel: ProductViewModel = viewM
                     Toast.makeText(context, "Geçerli bir değer girin", Toast.LENGTH_SHORT).show()
                 }
             },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Orange, // Buton arka plan rengi
+                contentColor = Color.White // Buton içindeki metnin rengi
+            ),
+            modifier = Modifier.fillMaxWidth(),
             enabled = name.isNotEmpty() && description.isNotEmpty() && category.value.isNotEmpty() && price.isNotEmpty() && imageUri != null
         ) {
             Text("Ürün Yükle")

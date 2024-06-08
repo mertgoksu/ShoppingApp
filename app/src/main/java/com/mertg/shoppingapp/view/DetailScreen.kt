@@ -1,5 +1,6 @@
 package com.mertg.shoppingapp.view
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.mertg.shoppingapp.model.Product
+import com.mertg.shoppingapp.navigation.Screen
 import com.mertg.shoppingapp.ui.theme.Orange
 import com.mertg.shoppingapp.viewmodel.ProductViewModel
 
@@ -39,6 +41,11 @@ fun DetailScreen(navController: NavController, productId: String, viewModel: Pro
         viewModel.checkIfFavorite(productId) { favorite ->
             isFavorite = favorite
         }
+    }
+
+    // Handle back press
+    BackHandler {
+        navController.navigate(Screen.HomePage.route)
     }
 
     Scaffold(
@@ -64,6 +71,7 @@ fun DetailScreen(navController: NavController, productId: String, viewModel: Pro
         } else {
             product?.let { p ->
                 Column(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
                     Image(
                         painter = rememberAsyncImagePainter(model = p.imageUrl),
                         contentDescription = p.name,
@@ -74,13 +82,28 @@ fun DetailScreen(navController: NavController, productId: String, viewModel: Pro
                         contentScale = ContentScale.Crop
                     )
                     Column(modifier = Modifier.padding(top = 16.dp)) {
-                        Text(text = p.name, style = MaterialTheme.typography.headlineSmall)
-                        Text(text = "${p.price} ₺", style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(text = p.name, style = MaterialTheme.typography.headlineSmall)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(text = p.description, style = MaterialTheme.typography.titleMedium)
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Text(text = "${p.price} ₺", style = MaterialTheme.typography.titleMedium)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Button(
                                 onClick = { viewModel.addToCart(p.id,p.name,context) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Orange, // Buton arka plan rengi
+                                    contentColor = Color.White // Buton içindeki metnin rengi
+                                )
                             ) {
                                 Text("Add to Cart")
                             }

@@ -1,7 +1,6 @@
 package com.mertg.shoppingapp.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,12 +29,16 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
     val isLoading by viewModel.isLoading.collectAsState()
     var totalAmount by remember { mutableStateOf(0.0) }
 
-    LaunchedEffect(cartItems) {
+    // Total amount calculation
+    DisposableEffect(cartItems) {
         totalAmount = cartItems.sumOf { it.first.price * it.second }
+        onDispose {}
     }
 
-    LaunchedEffect(Unit) {
+    // Fetch cart items whenever the component is first composed
+    DisposableEffect(Unit) {
         viewModel.getCartItems()
+        onDispose {}
     }
 
     Scaffold(
@@ -99,11 +102,15 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        viewModel.clearCart()
+                        navController.navigate(Screen.PaymentPage.route)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Orange,
+                        contentColor = Color.White
+                    ),
                 ) {
-                    Text("Checkout")
+                    Text("Sipariş Ver")
                 }
             }
         }

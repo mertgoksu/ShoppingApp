@@ -11,11 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.mertg.shoppingapp.view.*
-import com.mertg.shoppingapp.viewmodel.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Favorite
@@ -28,16 +25,16 @@ fun ShoppingAppNavigator() {
     val bottomNavigationItems = remember {
         listOf(
             BottomNavigationItem(
-                icon = Icons.Default.Home, text = "Home"
+                icon = Icons.Default.Home, text = "Anasayfa"
             ),
             BottomNavigationItem(
-                icon = Icons.Default.Favorite, text = "Favorites"
+                icon = Icons.Default.Favorite, text = "Favoriler"
             ),
             BottomNavigationItem(
-                icon = Icons.Default.ShoppingCart, text = "Cart"
+                icon = Icons.Default.ShoppingCart, text = "Sepet"
             ),
             BottomNavigationItem(
-                icon = Icons.Default.Person, text = "Profile"
+                icon = Icons.Default.Person, text = "Profil"
             )
         )
     }

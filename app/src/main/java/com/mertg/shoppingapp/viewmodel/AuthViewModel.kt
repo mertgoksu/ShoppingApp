@@ -33,7 +33,6 @@ class AuthViewModel : ViewModel() {
         email: String,
         password: String,
         phone: String,
-        address: String,
         context: Context,
         navController: NavController
     ) {
@@ -45,7 +44,6 @@ class AuthViewModel : ViewModel() {
                         "name" to name,
                         "email" to email,
                         "phone" to phone,
-                        "address" to address
                     )
                     db.collection("users").document(userId).set(user)
                         .addOnSuccessListener {

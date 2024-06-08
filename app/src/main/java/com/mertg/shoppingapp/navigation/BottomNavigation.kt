@@ -1,4 +1,4 @@
-package com.mertg.shoppingapp.view
+package com.mertg.shoppingapp.navigation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mertg.shoppingapp.navigation.BottomNavigationItem
 import com.mertg.shoppingapp.ui.theme.Orange
 
 @Composable
@@ -48,21 +47,21 @@ fun BottomNavigation(
                             imageVector = item.icon,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = if (index == selected) Color.White else LocalContentColor.current
+                            tint = if (index == selected)  LocalContentColor.current else Color.White
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = item.text,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (index == selected) Color.White else LocalContentColor.current
+                            color = if (index == selected)  LocalContentColor.current else Color.White
                         )
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    selectedTextColor = Color.White,
-                    unselectedIconColor = LocalContentColor.current,
-                    unselectedTextColor = LocalContentColor.current,
+                    selectedIconColor = LocalContentColor.current,
+                    selectedTextColor = LocalContentColor.current,
+                    unselectedIconColor = Color.White,
+                    unselectedTextColor = Color.White,
                     indicatorColor = Orange
                 ),
                 modifier = Modifier.weight(1f)
@@ -70,3 +69,5 @@ fun BottomNavigation(
         }
     }
 }
+
+
