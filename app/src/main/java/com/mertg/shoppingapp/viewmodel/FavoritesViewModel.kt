@@ -16,46 +16,63 @@ class FavoritesViewModel : ViewModel() {
     private val _favoriteItems = MutableStateFlow<List<Product>>(emptyList())
     val favoriteItems: StateFlow<List<Product>> = _favoriteItems
 
-    private val _isLoading = MutableStateFlow(true)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     fun getFavoriteItems() {
-        val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items")
+            _isLoading.value = true
+            val userId = auth.currentUser?.uid ?: return@launch
+            db.collection("favorites").document(userId)
+                .collection("items")
                 .get()
-                .addOnSuccessListener { result ->
-                    val items = result.map { document ->
-                        document.toObject(Product::class.java).copy(id = document.id)
-                    }
-                    _favoriteItems.value = items
+                .addOnSuccessListener { documents ->
+                    val favorites = documents.mapNotNull { it.toObject(Product::class.java) }
+                    _favoriteItems.value = favorites
                     _isLoading.value = false
                 }
                 .addOnFailureListener {
+                    _favoriteItems.value = emptyList()
                     _isLoading.value = false
                 }
         }
     }
 
-    fun addItemToFavorites(product: Product) {
+    fun toggleFavorite(product: Product) {
         val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items").document(product.id)
-                .set(product)
-                .addOnSuccessListener {
-                    getFavoriteItems() // Refresh favorite items
-                }
+        val docRef = db.collection("favorites").document(userId).collection("items").document(product.id)
+
+        docRef.get().addOnSuccessListener { document ->
+            if (document.exists()) {
+                docRef.delete()
+                    .addOnSuccessListener {
+                        getFavoriteItems()
+                    }
+            } else {
+                docRef.set(product)
+                    .addOnSuccessListener {
+                        getFavoriteItems()
+                    }
+            }
         }
     }
 
-    fun removeItemFromFavorites(productId: String) {
+    fun isFavorite(product: Product): Boolean {
+        return favoriteItems.value.any { it.id == product.id }
+    }
+
+    fun clearAllFavorites() {
         val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("favorites").document(userId).collection("items").document(productId)
-                .delete()
-                .addOnSuccessListener {
-                    getFavoriteItems() // Refresh favorite items
+        db.collection("favorites").document(userId).collection("items")
+            .get()
+            .addOnSuccessListener { documents ->
+                val batch = db.batch()
+                documents.forEach { document ->
+                    batch.delete(document.reference)
                 }
-        }
+                batch.commit().addOnSuccessListener {
+                    getFavoriteItems()
+                }
+            }
     }
 }

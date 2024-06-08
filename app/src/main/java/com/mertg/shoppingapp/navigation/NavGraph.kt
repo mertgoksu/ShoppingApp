@@ -1,6 +1,7 @@
 package com.mertg.shoppingapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,14 +12,20 @@ import com.mertg.shoppingapp.viewmodel.*
 
 @Composable
 fun NavGraph(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
-    authViewModel: AuthViewModel,
-    productViewModel: ProductViewModel
+    startDestination: String = Screen.LoginPage.route
 ) {
+    val authViewModel = AuthViewModel()
+    val productViewModel = ProductViewModel()
     val cartViewModel = CartViewModel()
     val favoritesViewModel = FavoritesViewModel()
 
-    NavHost(navController = navController, startDestination = Screen.LoginPage.route) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
         composable(Screen.LoginPage.route) {
             LoginScreen(navController = navController, viewModel = authViewModel)
         }
@@ -29,7 +36,7 @@ fun NavGraph(
             UploadItem(navController = navController, viewModel = productViewModel)
         }
         composable(Screen.HomePage.route) {
-            MainScaffold(navController = navController,authViewModel,productViewModel)
+            HomeScreen(navController = navController, viewModel = productViewModel)
         }
         composable(Screen.CartPage.route) {
             CartScreen(navController = navController, viewModel = cartViewModel)
@@ -37,8 +44,11 @@ fun NavGraph(
         composable(Screen.FavoritesPage.route) {
             FavoritesScreen(navController = navController, viewModel = favoritesViewModel)
         }
-        composable(Screen.ProfilePage.route) {
-            // ProfileScreen composable fonksiyonu burada oluşturulmalı
+        composable(Screen.ProfilePageScreen.route) {
+            ProfileScreen(navController = navController)
+        }
+        composable(Screen.EditProfileScreen.route) {
+            EditProfileScreen(navController = navController)
         }
         composable(
             route = Screen.DetailPage.route,
@@ -52,5 +62,9 @@ fun NavGraph(
                 viewModel = productViewModel
             )
         }
+        composable(Screen.PaymentPage.route) {
+            PaymentScreen(navController,cartViewModel)
+        }
+
     }
 }

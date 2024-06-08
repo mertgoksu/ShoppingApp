@@ -3,70 +3,93 @@ package com.mertg.shoppingapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mertg.shoppingapp.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class CartViewModel : ViewModel() {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
     private val _cartItems = MutableStateFlow<List<Pair<Product, Int>>>(emptyList())
     val cartItems: StateFlow<List<Pair<Product, Int>>> = _cartItems
 
-    private val _isLoading = MutableStateFlow(true)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     fun getCartItems() {
         viewModelScope.launch {
             _isLoading.value = true
             val userId = auth.currentUser?.uid ?: return@launch
-            val cartRef = db.collection("carts").document(userId)
+            db.collection("carts").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    val productIds = document.data?.keys ?: emptySet()
+                    val quantities = document.data?.values ?: emptyList()
 
-            try {
-                val document = cartRef.get().await()
-                val productEntries = document.data?.entries ?: emptySet()
-                val products = mutableListOf<Pair<Product, Int>>()
-
-                for ((productId, quantity) in productEntries) {
-                    val productDoc = db.collection("products").document(productId).get().await()
-                    val product = productDoc.toObject(Product::class.java)?.copy(id = productId)
-                    if (product != null && quantity is Long) {
-                        products.add(Pair(product, quantity.toInt()))
+                    val cartItems = mutableListOf<Pair<Product, Int>>()
+                    for ((index, productId) in productIds.withIndex()) {
+                        val quantity = quantities.elementAt(index) as? Long ?: 0
+                        db.collection("products").document(productId)
+                            .get()
+                            .addOnSuccessListener { productDoc ->
+                                val product = productDoc.toObject(Product::class.java)?.copy(id = productId)
+                                if (product != null) {
+                                    cartItems.add(product to quantity.toInt())
+                                    _cartItems.value = cartItems
+                                }
+                            }
                     }
+                    _isLoading.value = false
                 }
+                .addOnFailureListener {
+                    _cartItems.value = emptyList()
+                    _isLoading.value = false
+                }
+        }
+    }
 
-                _cartItems.value = products
-            } catch (e: Exception) {
-                _cartItems.value = emptyList()
-            } finally {
-                _isLoading.value = false
+    fun updateQuantity(productId: String, quantity: Int) {
+        val userId = auth.currentUser?.uid ?: return
+        if (quantity <= 0) {
+            removeFromCart(productId)
+        } else {
+            db.collection("carts").document(userId).update(productId, quantity)
+            getCartItems()
+        }
+    }
+
+    fun removeFromCart(productId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("carts").document(userId).update(productId, FieldValue.delete())
+            .addOnSuccessListener {
+                checkIfCartIsEmpty(userId)
             }
-        }
     }
 
-    fun addItemToCart(product: Product) {
-        val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("carts").document(userId).collection("items").document(product.id)
-                .set(product)
-                .addOnSuccessListener {
-                    getCartItems() // Refresh cart items
+    private fun checkIfCartIsEmpty(userId: String) {
+        db.collection("carts").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document.data.isNullOrEmpty()) {
+                    _cartItems.value = emptyList()
+                } else {
+                    getCartItems()
                 }
-        }
+            }
     }
 
-    fun removeItemFromCart(productId: String) {
+    fun clearCart() {
         val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            db.collection("carts").document(userId).collection("items").document(productId)
-                .delete()
-                .addOnSuccessListener {
-                    getCartItems() // Refresh cart items
-                }
-        }
+        db.collection("carts").document(userId).delete()
+            .addOnSuccessListener {
+                _cartItems.value = emptyList()
+            }
+            .addOnFailureListener {
+                // Handle failure if needed
+            }
     }
 }
