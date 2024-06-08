@@ -126,9 +126,17 @@ fun PaymentScreen(navController: NavController, viewModel: CartViewModel) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    Toast.makeText(context, "Siparişiniz alındı!", Toast.LENGTH_LONG).show()
-                    viewModel.clearCart()
-                    navController.popBackStack(Screen.CartPage.route, inclusive = false)
+                    if (cardNumber.text.length != 19) {
+                        Toast.makeText(context, "Lütfen geçerli bir kredi kartı numarası girin.", Toast.LENGTH_LONG).show()
+                    } else if (expirationDate.text.length != 5 || !expirationDate.text.contains("/")) {
+                        Toast.makeText(context, "Lütfen geçerli bir son kullanma tarihi girin.", Toast.LENGTH_LONG).show()
+                    } else if (cvv.text.length != 3) {
+                        Toast.makeText(context, "Lütfen geçerli bir CVV girin.", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Siparişiniz alındı!", Toast.LENGTH_LONG).show()
+                        viewModel.clearCart()
+                        navController.popBackStack(Screen.CartPage.route, inclusive = false)
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Orange,
